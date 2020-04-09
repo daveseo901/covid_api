@@ -25,7 +25,7 @@ SECRET_KEY = 'boyd(y3k_1c#!*6lbnqu4y1upp%!+k*+cw-n@g(72_nqr@6f&m'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["covid.localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["127.0.0.1", "34.71.54.248"]
 
 
 # Application definition

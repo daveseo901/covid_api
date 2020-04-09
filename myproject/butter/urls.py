@@ -15,7 +15,7 @@ urlpatterns = [
         views.DayList.as_view(),
         name='day-list'),
     path('days/<int:pk>/', 
-        views.CountyDetail.as_view(),
+        views.DayDetail.as_view(),
         name='day-detail'),
     path('users/', 
         views.UserList.as_view(),

@@ -11,7 +11,7 @@ import os
 import sys
 
 
-path = '~/Desktop/project/myproject'
+path = 'home/davidseo901/project/covid_api/myproject'
 
 
 if path not in sys.path:

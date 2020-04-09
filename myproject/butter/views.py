@@ -21,7 +21,7 @@ class DayList(generics.ListCreateAPIView):
     serializer_class = DaySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get_queryset(self):
-        queryset = County.objects.all()
+        queryset = Day.objects.all()
         date = self.request.query_params.get('date', None)
         if date is not None:
             queryset = queryset.filter(date=date)
