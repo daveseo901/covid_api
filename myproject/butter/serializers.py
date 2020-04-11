@@ -9,6 +9,27 @@ class DaySerializer(serializers.HyperlinkedModelSerializer):
         fields = ['url', 'date', 'cases', 'deaths']
 
 
+class RecentDaySerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Day
+        fields = ['url', 'cases', 'deaths']
+
+
+class SpecificCountySerializer(serializers.HyperlinkedModelSerializer):
+    recent_cases = serializers.IntegerField(source='recent_day.cases', read_only=True)
+    
+    class Meta:
+        model = County
+        fields = ['code', 'recent_cases']
+
+    def create(self, validated_data):
+        days_data = validated_data.pop('days')
+        county = County.objects.create(**validated_data)
+        for day_data in days_data:
+            Day.objects.create(county=county, **day_data)
+        return county
+
+
 class CountySerializer(serializers.HyperlinkedModelSerializer):
     days = DaySerializer(many=True)
     

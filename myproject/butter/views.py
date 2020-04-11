@@ -1,5 +1,5 @@
 from butter.models import County, Day
-from butter.serializers import CountySerializer, DaySerializer, UserSerializer
+from butter.serializers import SpecificCountySerializer, CountySerializer, DaySerializer, UserSerializer
 from rest_framework import generics, permissions
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view
@@ -34,8 +34,18 @@ class DayDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
+class SlimCountyList(generics.ListCreateAPIView):
+    serializer_class = SpecificCountySerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    def get_queryset(self):
+        queryset = County.objects.all()
+        code = self.request.query_params.get('code', None)
+        if code is not None:
+            queryset = queryset.filter(code=code)
+        return queryset
+
+
 class CountyList(generics.ListCreateAPIView):
-    queryset = County.objects.all()
     serializer_class = CountySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get_queryset(self):
