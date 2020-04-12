@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from butter.geosearch import coordinateToFips, zipToFips
 
 
 @api_view(['GET'])
@@ -51,7 +52,16 @@ class CountyList(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = County.objects.all()
         code = self.request.query_params.get('code', None)
+        zipcode = self.request.query_params.get('zip', None)
+        lat = self.request.query_params.get('lat', None)
+        lon = self.request.query_params.get('long', None)
         if code is not None:
+            queryset = queryset.filter(code=code)
+        elif zipcode is not None:
+            code = zipToFips(zipcode)
+            queryset = queryset.filter(code=code)
+        elif lat is not None and lon is not None:
+            code = coordinateToFips(lat, lon)
             queryset = queryset.filter(code=code)
         return queryset
 

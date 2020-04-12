@@ -8,12 +8,17 @@ from butter.models import County, Day
 
 import csv
 
-c = County.objects.all()
-c.delete()
+from datetime import datetime, timedelta, date
 
-with open('/home/davidseo901/project/covid_api/data/covid-19-data/us-counties.csv') as csv_file:
+yesterday = date.today() - timedelta(days=1)
+
+with open('/home/davidseo901/project/data/us-counties.csv') as csv_file:
     reader = csv.DictReader(csv_file)
     for row in reader:
+        date = row['date']
+        compdate = datetime.strptime(date, '%Y-%m-%d').date()
+        if compdate < yesterday:
+            continue
         fips = row['fips']
         if fips == '':
             continue
@@ -24,7 +29,6 @@ with open('/home/davidseo901/project/covid_api/data/covid-19-data/us-counties.cs
             county = County(name=name, code=fips)
             county.save()
         countyid = County.objects.get(code=fips)
-        date = row['date']
         cases = row['cases']
         deaths = row['deaths']
         day = Day(county=countyid, date=date, cases=cases, deaths=deaths)

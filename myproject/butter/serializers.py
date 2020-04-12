@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 class DaySerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Day
-        fields = ['url', 'date', 'cases', 'deaths']
+        fields = ['date', 'cases', 'deaths']
 
 
 class RecentDaySerializer(serializers.HyperlinkedModelSerializer):
@@ -35,7 +35,7 @@ class CountySerializer(serializers.HyperlinkedModelSerializer):
     
     class Meta:
         model = County
-        fields = ['url', 'name', 'code', 'days']
+        fields = ['name', 'code', 'days']
 
     def create(self, validated_data):
         days_data = validated_data.pop('days')
