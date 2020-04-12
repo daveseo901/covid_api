@@ -7,8 +7,14 @@ def coordinateToFips(lat, lon):
     url = 'https://geo.fcc.gov/api/census/block/find?latitude=' + str(lat) + '&longitude=' + str(lon) + '&format=json'
     response = requests.get(url)
     data = response.json()
-    return int(data["County"]["FIPS"])
+    if "County" not in data:
+        return 0
+    else:
+        return int(data["County"]["FIPS"])
 
 def zipToFips(zip):
     zipstr = str(zip)
-    return int(zip2fips[zipstr])
+    if zipstr not in zip2fips:
+        return 0
+    else:
+        return int(zip2fips[zipstr])

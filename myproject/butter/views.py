@@ -6,6 +6,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from butter.geosearch import coordinateToFips, zipToFips
+from datetime import date, timedelta
+from django.db.models import Sum, Max
 
 
 @api_view(['GET'])
@@ -15,6 +17,20 @@ def api_root(request, format=None):
         'counties': reverse('county-list', request=request, format=format),
         'days': reverse('day-list', request=request, format=format)
     })
+
+
+@api_view(['GET'])
+def national_list(request):
+    today = date(2020, 1, 21)
+    increment = timedelta(days=1)
+    data = []
+    tempset = Day.objects.filter(date=today)
+    while bool(tempset):
+        theset = tempset.aggregate(date=Max('date'), cases=Sum('cases'), deaths=Sum('deaths'))
+        data.append(theset)
+        today += increment
+        tempset = Day.objects.filter(date=today)
+    return Response(data)
 
 
 class DayList(generics.ListCreateAPIView):

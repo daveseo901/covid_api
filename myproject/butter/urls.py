@@ -5,6 +5,7 @@ from django.conf.urls import include
 
 urlpatterns = [
     path('', views.api_root),
+    path('national/', views.national_list),
     path('slimcounties/',
         views.SlimCountyList.as_view(),
         name='slim-county-list'),
