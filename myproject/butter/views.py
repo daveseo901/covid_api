@@ -6,8 +6,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from butter.geosearch import coordinateToFips, zipToFips
-from datetime import date, timedelta
-from django.db.models import Sum, Max
+from datetime import datetime, date, timedelta
+from django.db.models import Sum
+from pandas import DataFrame
+import numpy
 
 
 @api_view(['GET'])
@@ -20,26 +22,76 @@ def api_root(request, format=None):
 
 
 @api_view(['GET'])
-def national_list(request):
-    today = date(2020, 1, 21)
-    increment = timedelta(days=1)
-    data = []
-    tempset = Day.objects.filter(date=today)
-    while bool(tempset):
-        theset = tempset.aggregate(date=Max('date'), cases=Sum('cases'), deaths=Sum('deaths'))
-        data.append(theset)
-        today += increment
-        tempset = Day.objects.filter(date=today)
-    return Response(data)
+def national_list(request, format=None):
+    queryset = Day.objects.values('date').annotate(cases=Sum('cases'), deaths=Sum('deaths'))
+    thedate = request.query_params.get('date', None)
+    tempset = queryset
+    if thedate is not None:
+        thedate = datetime.strptime(thedate, '%Y-%m-%d').date()
+        queryset = queryset.filter(date=thedate)
+    bigset = {'data': queryset}
+    show_growth = bool(request.query_params.get('growth', False))
+    if show_growth:
+        dataset = DataFrame(tempset)
+        dataset.set_index('date', inplace=True)
+        #deltaset = dataset.shift(1).fillna(0)
+        #dataset = dataset - deltaset
+        delta = 3
+        dataset = dataset.pct_change(periods=delta, fill_method='ffill').replace([numpy.inf], 0).fillna(0)
+        if thedate is not None:
+            dataset = dataset.loc[[thedate]]
+        dataset = dataset.divide(delta)
+        dataset = dataset.reset_index(level=['date'])
+        growthqueryset = dataset.to_dict('records')
+        bigset.update({'growth': growthqueryset})
+    return Response([bigset])
+
+
+@api_view(['GET'])
+def day_list(request, format=None):
+    queryset = Day.objects.all()
+    countycode = request.query_params.get('code', None)
+    if countycode is not None:
+        thecounty = County.objects.filter(code=countycode)
+        if bool(thecounty):
+            queryset = queryset.filter(county=thecounty[0])
+        else:
+            queryset = []
+    thedate = request.query_params.get('date', None)
+    tempset = DaySerializer(queryset, many=True).data
+    if thedate is not None:
+        queryset = queryset.filter(date=thedate)
+    bigset = {'data': DaySerializer(queryset, many=True).data}
+    show_growth = bool(request.query_params.get('growth', False))
+    if show_growth:
+        dataset = DataFrame(tempset)
+        dataset.set_index('date', inplace=True)
+        #deltaset = dataset.shift(1).fillna(0)
+        #dataset = dataset - deltaset
+        delta = 3
+        dataset = dataset.pct_change(periods=delta, fill_method='ffill').replace([numpy.inf], 0).fillna(0)
+        if thedate is not None:
+            dataset = dataset.loc[[thedate]]
+        dataset = dataset.divide(delta)
+        dataset = dataset.reset_index(level=['date'])
+        growthqueryset = dataset.to_dict('records')
+        bigset.update({'growth': growthqueryset})
+    return Response([bigset])
 
 
 class DayList(generics.ListCreateAPIView):
-    queryset = Day.objects.all()
     serializer_class = DaySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get_queryset(self):
         queryset = Day.objects.all()
         date = self.request.query_params.get('date', None)
+        countycode = self.request.query_params.get('code', None)
+        if countycode is not None:
+            thecounty = County.objects.filter(code=countycode)
+            if bool(thecounty):
+                queryset = queryset.filter(county=thecounty[0])
+            else:
+                queryset = []
         if date is not None:
             queryset = queryset.filter(date=date)
         return queryset
