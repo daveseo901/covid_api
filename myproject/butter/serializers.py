@@ -23,7 +23,7 @@ class SpecificCountySerializer(serializers.HyperlinkedModelSerializer):
         fields = ['code', 'recent_cases']
 
     def create(self, validated_data):
-        days_data = validated_data.pop('days')
+        days_data = validated_data.pop('data')
         county = County.objects.create(**validated_data)
         for day_data in days_data:
             Day.objects.create(county=county, **day_data)
@@ -31,14 +31,14 @@ class SpecificCountySerializer(serializers.HyperlinkedModelSerializer):
 
 
 class CountySerializer(serializers.HyperlinkedModelSerializer):
-    days = DaySerializer(many=True)
+    data = DaySerializer(many=True)
     
     class Meta:
         model = County
-        fields = ['name', 'code', 'days']
+        fields = ['name', 'code', 'data']
 
     def create(self, validated_data):
-        days_data = validated_data.pop('days')
+        days_data = validated_data.pop('data')
         county = County.objects.create(**validated_data)
         for day_data in days_data:
             Day.objects.create(county=county, **day_data)

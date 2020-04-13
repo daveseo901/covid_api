@@ -139,7 +139,7 @@ class CountyDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CountySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    
+
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer

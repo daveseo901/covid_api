@@ -6,13 +6,14 @@ class County(models.Model):
 
     @property
     def recent_day(self):
-        return self.days.last()
-    
+        return self.data.last()
+
     class Meta:
         ordering = ['code']
 
+
 class Day(models.Model):
-    county = models.ForeignKey(County, related_name='days', on_delete=models.CASCADE)
+    county = models.ForeignKey(County, related_name='data', on_delete=models.CASCADE)
     date = models.DateField()
     cases = models.IntegerField()
     deaths = models.IntegerField()
